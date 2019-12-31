@@ -156,4 +156,11 @@ public class Controller {
         manager.updateState(state);
         return "OK";
     }
+
+    @RequestMapping(value = "/api/updateValve", method = RequestMethod.POST)
+    public String updateControlerActuator(@RequestBody HardwareController controller) {
+        //manager.updateState(state);
+	log.info("valve {}", controller.valves.get(0).id);
+        return "OK";
+    }
 }
