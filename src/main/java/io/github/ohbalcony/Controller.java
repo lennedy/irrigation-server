@@ -55,10 +55,14 @@ public class Controller {
 
     private final JexlEngine jexl;
 
+		Instructions instructions;
+		private boolean instructionsUpdated=false;
+
     @Autowired
     public Controller(Store store, ControllerManager manager) {
         this.store = store;
         this.manager = manager;
+				this.instructions = new Instructions();
 
         jexl = new JexlBuilder().cache(100).namespaces(Collections.singletonMap(null, ExpressionFunctions.class))
                 .create();
@@ -138,7 +142,10 @@ public class Controller {
                 }
             }
         }
-
+				if(instructionsUpdated){
+					instructionsUpdated=false;
+					instructions =  this.instructions;
+				}
         store.save(sensorData, instructions);
         
         return instructions;
@@ -157,10 +164,21 @@ public class Controller {
         return "OK";
     }
 
-    @RequestMapping(value = "/api/updateValve", method = RequestMethod.POST)
+    @RequestMapping(value = "/api/updateActuators", method = RequestMethod.POST)
     public String updateControlerActuator(@RequestBody HardwareController controller) {
-        //manager.updateState(state);
-	log.info("valve {}", controller.valves.get(0).id);
-        return "OK";
+			instructionsUpdated=true;
+			Instructions instructions=new Instructions();
+			for(int i=0; i<controller.valves.size(); i++){
+				instructions.valves.put(controller.valves.get(i).id, controller.valves.get(i).isOpen);
+			}
+			for(int i=0; i<controller.pumps.size(); i++){
+				instructions.pumps.put(controller.pumps.get(i).id, controller.pumps.get(i).isActive);
+			}
+			
+			log.info("valve {} value {}", controller.valves.get(0).id, controller.valves.get(0).isOpen);
+			
+			this.instructions = instructions;
+			
+			return "OK";
     }
 }
